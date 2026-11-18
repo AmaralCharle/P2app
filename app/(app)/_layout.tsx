@@ -92,7 +92,9 @@ export default function AppLayout() {
           </View>
 
           <View style={styles.content}>
-            <Slot />
+            <View style={styles.contentInner}>
+              <Slot />
+            </View>
           </View>
         </SafeAreaView>
       </AcademicProvider>
@@ -169,5 +171,12 @@ const createStyles = (colors: ThemeColors) =>
     content: {
       flex: 1,
       backgroundColor: '#050811',
+    },
+    contentInner: {
+      maxWidth: 1200,
+      width: '100%',
+      alignSelf: 'center',
+      padding: 32,
+      flex: 1,
     },
   });
