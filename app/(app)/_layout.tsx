@@ -53,7 +53,6 @@ export default function AppLayout() {
               style={styles.navigation}
               showsVerticalScrollIndicator={Platform.OS === 'web'}
               contentContainerStyle={{
-                gap: 12,
                 paddingBottom: 10,
               }}
             >
@@ -144,29 +143,28 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 15,
     },
     tabButton: {
-      minHeight: 44,
       width: '100%',
-      justifyContent: 'center',
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      borderWidth: 1,
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      marginBottom: 8,
+      borderRadius: 12,
     },
     tabButtonActive: {
-      backgroundColor: colors.primaryDark,
-      borderColor: colors.primaryDark,
+      backgroundColor: '#2563EB',
     },
     tabButtonInactive: {
       backgroundColor: 'transparent',
-      borderColor: colors.border,
     },
     tabText: {
-      color: colors.textSoft,
+      color: '#9CA3AF',
       fontSize: 12,
       fontWeight: '600',
+      textAlign: 'left',
     },
     tabTextActive: {
-      color: colors.textInverse,
+      color: '#FFFFFF',
     },
     content: {
       flex: 1,
