@@ -20,7 +20,7 @@ Abra pelo Expo Go compatível com o SDK do projeto ou use `npm run web` no naveg
 | Login                 | `/login`             | Entrada demonstrativa                                        |
 | Dashboard             | `/`                  | Indicadores da turma e atalhos                               |
 | Alunos                | `/alunos`            | Consulta, filtros e remoção confirmada de alunos             |
-| Adicionar aluno       | `/novo-aluno`        | Cadastro de estudante                                        |
+| Adicionar aluno       | `/novo-aluno`        | Cadastro de aluno com curso existente ou novo                |
 | Notas                 | `/notas`             | Seleção para lançamento                                      |
 | Notas do aluno        | `/aluno/[id]`        | Editar notas entre 0 e 10, com ponto ou vírgula              |
 | Relatórios            | `/relatorios`        | Desempenho acadêmico                                         |

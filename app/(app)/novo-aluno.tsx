@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
   useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -22,14 +23,33 @@ export default function NovoAluno() {
   const styles = createStyles(colors);
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const { addStudent: registerStudent } = useStudents();
+  const { students, addStudent: registerStudent } = useStudents();
+  const courses = [
+    ...new Set(students.map((student) => student.curso.trim()).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   const [newStudentName, setNewStudentName] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [isCustomCourse, setIsCustomCourse] = useState(false);
+  const [customCourse, setCustomCourse] = useState('');
+  const [error, setError] = useState('');
 
   const addStudent = () => {
-    if (!newStudentName.trim()) return;
+    const course = isCustomCourse ? customCourse.trim() : selectedCourse;
+    if (!newStudentName.trim()) {
+      setError('Informe o nome do aluno.');
+      return;
+    }
+    if (!course) {
+      setError('Selecione um curso ou escolha Outro curso.');
+      return;
+    }
 
-    registerStudent(newStudentName.trim());
+    registerStudent(newStudentName.trim(), course);
     setNewStudentName('');
+    setSelectedCourse(null);
+    setIsCustomCourse(false);
+    setCustomCourse('');
+    setError('');
     router.replace('/alunos');
   };
 
@@ -59,6 +79,78 @@ export default function NovoAluno() {
               placeholderTextColor={colors.placeholder}
               style={styles.input}
             />
+            <Text style={[styles.textoBase, styles.label]}>Curso</Text>
+            <View style={styles.courseOptions}>
+              {courses.map((course) => (
+                <Pressable
+                  key={course}
+                  accessibilityRole="button"
+                  accessibilityState={{
+                    selected: !isCustomCourse && selectedCourse === course,
+                  }}
+                  style={[
+                    styles.courseOption,
+                    !isCustomCourse &&
+                      selectedCourse === course &&
+                      styles.courseOptionSelected,
+                  ]}
+                  onPress={() => {
+                    setSelectedCourse(course);
+                    setIsCustomCourse(false);
+                    setError('');
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.textoBase,
+                      !isCustomCourse &&
+                        selectedCourse === course &&
+                        styles.courseOptionTextSelected,
+                    ]}
+                  >
+                    {course}
+                  </Text>
+                </Pressable>
+              ))}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: isCustomCourse }}
+                style={[
+                  styles.courseOption,
+                  isCustomCourse && styles.courseOptionSelected,
+                ]}
+                onPress={() => {
+                  setSelectedCourse(null);
+                  setIsCustomCourse(true);
+                  setError('');
+                }}
+              >
+                <Text
+                  style={[
+                    styles.textoBase,
+                    isCustomCourse && styles.courseOptionTextSelected,
+                  ]}
+                >
+                  Outro curso
+                </Text>
+              </Pressable>
+            </View>
+            {isCustomCourse && (
+              <TextInput
+                accessibilityLabel="Nome do novo curso"
+                value={customCourse}
+                onChangeText={setCustomCourse}
+                placeholder="Digite o nome do curso"
+                placeholderTextColor={colors.placeholder}
+                style={styles.input}
+                maxLength={100}
+              />
+            )}
+            {!!error && (
+              <Text accessibilityRole="alert" style={styles.error}>
+                {error}
+              </Text>
+            )}
             <Pressable style={styles.primaryButton} onPress={addStudent}>
               <Text style={[styles.textoBase, styles.primaryButtonText]}>
                 Cadastrar aluno
@@ -135,6 +227,37 @@ const createStyles = (colors: ThemeColors) =>
       paddingVertical: spacing.mdCompact,
       marginBottom: spacing.mdCompact,
       fontSize: 15,
+    },
+    label: {
+      color: colors.textSoft,
+      fontSize: 13,
+      marginBottom: spacing.sm,
+    },
+    courseOptions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginBottom: spacing.mdCompact,
+    },
+    courseOption: {
+      backgroundColor: colors.backgroundPill,
+      borderRadius: radius.full,
+      paddingHorizontal: spacing.mdCompact,
+      paddingVertical: spacing.sm,
+      borderWidth: 1,
+      borderColor: colors.borderInput,
+    },
+    courseOptionSelected: {
+      backgroundColor: colors.primaryDark,
+      borderColor: colors.primaryBorder,
+    },
+    courseOptionTextSelected: {
+      color: colors.textInverse,
+    },
+    error: {
+      color: colors.danger,
+      fontSize: 13,
+      marginBottom: spacing.mdCompact,
     },
     primaryButton: {
       backgroundColor: colors.primary,

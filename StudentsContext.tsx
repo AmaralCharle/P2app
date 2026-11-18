@@ -15,7 +15,7 @@ export type Student = {
 
 type StudentsContextValue = {
   students: Student[];
-  addStudent: (name: string) => void;
+  addStudent: (name: string, curso: string) => void;
   removerAluno: (id: number) => Promise<boolean>;
   updateGrade: (studentId: number, subject: string, grade: number) => void;
 };
@@ -34,11 +34,11 @@ export function StudentsProvider({ children }: PropsWithChildren) {
   const setStudents = persisted.update;
   const { removeStudentDependencies } = useAcademic();
 
-  const addStudent = (name: string) => {
+  const addStudent = (name: string, curso: string) => {
     const student: Student = {
       id: Math.max(Date.now(), ...students.map((item) => item.id + 1)),
       name: name.trim(),
-      curso: 'Novo curso',
+      curso: curso.trim(),
       notas: {
         Matemática: 0,
         Física: 0,
