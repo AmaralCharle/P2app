@@ -1,6 +1,7 @@
 import type { ThemeColors } from '../../theme';
 import { useTheme } from '../../ThemeContext';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -64,9 +65,9 @@ export default function AppLayout() {
             </View>
 
             <ScrollView
-              style={{ flexGrow: 0, flexShrink: 1, maxWidth: '100%' }}
+              style={{ flexGrow: 0, flexShrink: 1, minWidth: 0, maxWidth: '100%' }}
               horizontal
-              showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={Platform.OS === 'web'}
               contentContainerStyle={{
                 gap: 12,
                 paddingBottom: 10,
