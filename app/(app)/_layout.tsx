@@ -1,13 +1,17 @@
 import type { ThemeColors } from '../../theme';
 import { useTheme } from '../../ThemeContext';
+import { useState } from 'react';
 import {
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { Redirect, Slot, usePathname, useRouter } from 'expo-router';
 import { useAuth } from '../../AuthContext';
 import { StudentsProvider } from '../../StudentsContext';
@@ -29,7 +33,10 @@ const screenOrder = [
 
 export default function AppLayout() {
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const styles = createStyles(colors, isMobile);
+  const [menuAberto, setMenuAberto] = useState(false);
   const { usuario } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -44,51 +51,87 @@ export default function AppLayout() {
         <SafeAreaView style={styles.screen}>
           <View style={styles.sidebarContainer}>
             <View style={styles.brand}>
-              <Text style={styles.eyebrow}>Sistema acadêmico</Text>
-              <Text style={styles.title}>Academy Notes</Text>
-              <Text style={styles.subtitle}>Painel de desempenho e notas</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <View>
+                  <Text style={styles.eyebrow}>Sistema acadêmico</Text>
+                  <Text style={styles.title}>Academy Notes</Text>
+                  <Text style={styles.subtitle}>
+                    Painel de desempenho e notas
+                  </Text>
+                </View>
+                {isMobile && (
+                  <TouchableOpacity
+                    onPress={() => setMenuAberto(!menuAberto)}
+                    style={{ padding: 8 }}
+                  >
+                    <Feather
+                      name={menuAberto ? 'x' : 'menu'}
+                      size={28}
+                      color="#FFF"
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
-            <ScrollView
-              style={styles.navigation}
-              showsVerticalScrollIndicator={Platform.OS === 'web'}
-              contentContainerStyle={{
-                paddingBottom: 10,
-              }}
-            >
-              {screenOrder.map(({ label, route }) => {
-                const isActive =
-                  route === '/'
-                    ? pathname === '/'
-                    : pathname === route ||
-                      pathname.startsWith(`${route}/`) ||
-                      (route === '/disciplinas' &&
-                        pathname.startsWith('/disciplina/')) ||
-                      (route === '/clima' && pathname.startsWith('/previsao/'));
+            {(!isMobile || menuAberto) && (
+              <ScrollView
+                style={styles.navigation}
+                horizontal={isMobile}
+                showsVerticalScrollIndicator={!isMobile && Platform.OS === 'web'}
+                showsHorizontalScrollIndicator={
+                  isMobile && Platform.OS === 'web'
+                }
+                contentContainerStyle={{
+                  paddingBottom: 10,
+                }}
+              >
+                {screenOrder.map(({ label, route }) => {
+                  const isActive =
+                    route === '/'
+                      ? pathname === '/'
+                      : pathname === route ||
+                        pathname.startsWith(`${route}/`) ||
+                        (route === '/disciplinas' &&
+                          pathname.startsWith('/disciplina/')) ||
+                        (route === '/clima' && pathname.startsWith('/previsao/'));
 
-                return (
-                  <Pressable
-                    key={label}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Ir para ${label}`}
-                    accessibilityState={{ selected: isActive }}
-                    style={[
-                      styles.tabButton,
-                      isActive
-                        ? styles.tabButtonActive
-                        : styles.tabButtonInactive,
-                    ]}
-                    onPress={() => router.replace(route)}
-                  >
-                    <Text
-                      style={[styles.tabText, isActive && styles.tabTextActive]}
+                  return (
+                    <Pressable
+                      key={label}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Ir para ${label}`}
+                      accessibilityState={{ selected: isActive }}
+                      style={[
+                        styles.tabButton,
+                        isActive
+                          ? styles.tabButtonActive
+                          : styles.tabButtonInactive,
+                      ]}
+                      onPress={() => {
+                        setMenuAberto(false);
+                        router.replace(route);
+                      }}
                     >
-                      {label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+                      <Text
+                        style={[
+                          styles.tabText,
+                          isActive && styles.tabTextActive,
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            )}
           </View>
 
           <View style={styles.content}>
@@ -102,24 +145,24 @@ export default function AppLayout() {
   );
 }
 
-const createStyles = (colors: ThemeColors) =>
+const createStyles = (colors: ThemeColors, isMobile: boolean) =>
   StyleSheet.create({
     screen: {
       flex: 1,
-      flexDirection: 'row',
+      flexDirection: isMobile ? 'column' : 'row',
       backgroundColor: colors.background,
     },
     sidebarContainer: {
-      width: 260,
+      width: isMobile ? '100%' : 260,
       backgroundColor: '#0A0F1E',
-      borderRightWidth: 1,
+      borderRightWidth: isMobile ? 0 : 1,
       borderColor: 'rgba(255,255,255,0.05)',
       paddingTop: 40,
       paddingHorizontal: 20,
       paddingBottom: 20,
     },
     navigation: {
-      flex: 1,
+      flex: isMobile ? 0 : 1,
     },
     brand: {
       flexShrink: 0,
@@ -145,7 +188,7 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 15,
     },
     tabButton: {
-      width: '100%',
+      width: isMobile ? 'auto' : '100%',
       flexDirection: 'row',
       justifyContent: 'flex-start',
       paddingVertical: 14,
@@ -176,7 +219,7 @@ const createStyles = (colors: ThemeColors) =>
       maxWidth: 1200,
       width: '100%',
       alignSelf: 'center',
-      padding: 32,
+      padding: isMobile ? 16 : 32,
       flex: 1,
     },
   });
