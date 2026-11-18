@@ -2,13 +2,17 @@ import type { ThemeColors } from '../../theme';
 import { useTheme } from '../../ThemeContext';
 import { useMemo, useState } from 'react';
 import {
+  Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { radius, spacing } from '../../theme';
@@ -22,7 +26,7 @@ export default function Alunos() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const router = useRouter();
-  const { students } = useStudents();
+  const { students, removerAluno } = useStudents();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('Todos');
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
@@ -42,6 +46,24 @@ export default function Alunos() {
       return matchesSearch && matchesStatus;
     });
   }, [students, search, statusFilter]);
+
+  const confirmRemoveStudent = (studentId: number) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Deseja realmente remover este aluno?')) {
+        removerAluno(studentId);
+      }
+      return;
+    }
+
+    Alert.alert('Remover aluno', 'Deseja realmente remover este aluno?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Remover',
+        style: 'destructive',
+        onPress: () => removerAluno(studentId),
+      },
+    ]);
+  };
 
   return (
     <SafeAreaView edges={[]} style={styles.screen}>
@@ -106,12 +128,20 @@ export default function Alunos() {
                       styles.studentCardSelected,
                   ]}
                 >
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => setSelectedStudentId(student.id)}
-                  >
-                    <View style={styles.studentHeaderRow}>
+                  <View style={styles.studentHeaderRow}>
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => setSelectedStudentId(student.id)}
+                    >
                       <Text style={styles.studentName}>{student.name}</Text>
+                    </Pressable>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 10,
+                      }}
+                    >
                       <Text
                         style={[
                           styles.statusBadge,
@@ -124,7 +154,25 @@ export default function Alunos() {
                       >
                         {status}
                       </Text>
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remover ${student.name}`}
+                        onPress={() => confirmRemoveStudent(student.id)}
+                        style={{ padding: 4 }}
+                      >
+                        <Feather
+                          name="trash-2"
+                          size={18}
+                          color="#EF4444"
+                        />
+                      </TouchableOpacity>
                     </View>
+                  </View>
+
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setSelectedStudentId(student.id)}
+                  >
                     <Text style={styles.studentCourse}>{student.curso}</Text>
                     <View style={styles.studentMetricsRow}>
                       <Text style={styles.metricText}>

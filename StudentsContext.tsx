@@ -15,6 +15,7 @@ export type Student = {
 type StudentsContextValue = {
   students: Student[];
   addStudent: (name: string) => void;
+  removerAluno: (id: number) => void;
   updateGrade: (studentId: number, subject: string, grade: number) => void;
 };
 
@@ -47,6 +48,10 @@ export function StudentsProvider({ children }: PropsWithChildren) {
     setStudents((current) => [student, ...current]);
   };
 
+  const removerAluno = (id: number) => {
+    setStudents((current) => current.filter((student) => student.id !== id));
+  };
+
   const updateGrade = (studentId: number, subject: string, grade: number) => {
     if (!subject.trim() || !Number.isFinite(grade) || grade < 0 || grade > 10)
       return;
@@ -72,7 +77,9 @@ export function StudentsProvider({ children }: PropsWithChildren) {
       saving={persisted.saving}
       retry={persisted.retry}
     >
-      <StudentsContext.Provider value={{ students, addStudent, updateGrade }}>
+      <StudentsContext.Provider
+        value={{ students, addStudent, removerAluno, updateGrade }}
+      >
         {children}
       </StudentsContext.Provider>
     </PersistenceGate>
