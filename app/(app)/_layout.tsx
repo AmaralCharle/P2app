@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { Redirect, Slot, usePathname, useRouter } from 'expo-router';
 import { useAuth } from '../../AuthContext';
@@ -34,8 +33,6 @@ export default function AppLayout() {
   const { usuario } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
-  const isMobile = width < 1040;
 
   if (!usuario) {
     return <Redirect href="/login" />;
@@ -45,33 +42,19 @@ export default function AppLayout() {
     <StudentsProvider>
       <AcademicProvider>
         <SafeAreaView style={styles.screen}>
-          <View
-            style={[
-              styles.headerContainer,
-              {
-                flexDirection: isMobile ? 'column' : 'row',
-                alignItems: isMobile ? 'flex-start' : 'center',
-                gap: isMobile ? 12 : 24,
-                padding: isMobile ? 16 : 24,
-              },
-            ]}
-          >
+          <View style={styles.sidebarContainer}>
             <View style={styles.brand}>
               <Text style={styles.eyebrow}>Sistema acadêmico</Text>
-              <Text style={[styles.title, isMobile && { fontSize: 28 }]}>
-                Academy Notes
-              </Text>
+              <Text style={styles.title}>Academy Notes</Text>
               <Text style={styles.subtitle}>Painel de desempenho e notas</Text>
             </View>
 
             <ScrollView
-              style={{ flexGrow: 0, flexShrink: 1, minWidth: 0, maxWidth: '100%' }}
-              horizontal
-              showsHorizontalScrollIndicator={Platform.OS === 'web'}
+              style={styles.navigation}
+              showsVerticalScrollIndicator={Platform.OS === 'web'}
               contentContainerStyle={{
                 gap: 12,
                 paddingBottom: 10,
-                paddingRight: 20,
               }}
             >
               {screenOrder.map(({ label, route }) => {
@@ -122,16 +105,19 @@ const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     screen: {
       flex: 1,
+      flexDirection: 'row',
       backgroundColor: colors.background,
     },
-    headerContainer: {
-      maxWidth: 1200,
-      width: '100%',
-      alignSelf: 'center',
+    sidebarContainer: {
+      width: 260,
+      backgroundColor: '#0A0F1E',
+      borderRightWidth: 1,
+      borderColor: 'rgba(255,255,255,0.05)',
       padding: 24,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+    },
+    navigation: {
+      flex: 1,
+      marginTop: 24,
     },
     brand: {
       flexShrink: 0,
@@ -156,6 +142,7 @@ const createStyles = (colors: ThemeColors) =>
     },
     tabButton: {
       minHeight: 44,
+      width: '100%',
       justifyContent: 'center',
       borderRadius: 10,
       paddingHorizontal: 12,
@@ -180,8 +167,6 @@ const createStyles = (colors: ThemeColors) =>
     },
     content: {
       flex: 1,
-      maxWidth: 1200,
-      width: '100%',
-      alignSelf: 'center',
+      backgroundColor: '#050811',
     },
   });
