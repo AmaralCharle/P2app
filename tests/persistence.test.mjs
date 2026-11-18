@@ -177,6 +177,31 @@ test('validadores impedem notas inválidas, ids duplicados e agenda incompatíve
   assert.equal(isStudentList([{ ...student, notas: { Física: 12 } }]), false);
   assert.equal(isAcademicData({ events: [], completedSessions: [] }), true);
   assert.equal(isAcademicData({ events: [{}], completedSessions: [] }), false);
+  const linkedEvent = {
+    id: 'event-1',
+    studentId: 1,
+    title: 'Prova',
+    subject: 'Matemática',
+    date: '2026-11-18',
+    done: false,
+  };
+  const legacyEvent = { ...linkedEvent };
+  delete legacyEvent.studentId;
+  assert.equal(
+    isAcademicData({ events: [legacyEvent], completedSessions: [] }),
+    true
+  );
+  assert.equal(
+    isAcademicData({ events: [linkedEvent], completedSessions: [] }),
+    true
+  );
+  assert.equal(
+    isAcademicData({
+      events: [{ ...linkedEvent, studentId: 0 }],
+      completedSessions: [],
+    }),
+    false
+  );
   assert.equal(isSession('Admin'), true);
   assert.equal(isSession({ token: 'nao-existe' }), false);
 });

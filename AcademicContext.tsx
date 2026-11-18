@@ -3,9 +3,11 @@ import { usePersistedState } from './hooks/usePersistedState';
 import { storageKeys } from './services/storage';
 import { isAcademicData, type AcademicData } from './services/validators';
 import { PersistenceGate } from './components/PersistenceGate';
+import { withoutStudentAcademicData } from './academic';
 
 export type AcademicEvent = {
   id: string;
+  studentId?: number;
   title: string;
   subject: string;
   date: string;
@@ -16,6 +18,7 @@ type AcademicValue = {
   addEvent: (event: Omit<AcademicEvent, 'id' | 'done'>) => void;
   toggleEvent: (id: string) => void;
   removeEvent: (id: string) => void;
+  removeStudentDependencies: (studentId: number) => Promise<boolean>;
   completedSessions: string[];
   toggleSession: (key: string) => void;
 };
@@ -55,6 +58,20 @@ export function AcademicProvider({ children }: PropsWithChildren) {
     );
   const removeEvent = (id: string) =>
     setEvents((current) => current.filter((event) => event.id !== id));
+  const removeStudentDependencies = (studentId: number) =>
+    persisted.update((current) => {
+      const filtered = withoutStudentAcademicData(
+        current.events,
+        current.completedSessions,
+        studentId
+      );
+      if (
+        filtered.events.length === current.events.length &&
+        filtered.completedSessions.length === current.completedSessions.length
+      )
+        return current;
+      return { ...current, ...filtered };
+    });
   const toggleSession = (key: string) =>
     setCompletedSessions((current) =>
       current.includes(key)
@@ -74,6 +91,7 @@ export function AcademicProvider({ children }: PropsWithChildren) {
           addEvent,
           toggleEvent,
           removeEvent,
+          removeStudentDependencies,
           completedSessions,
           toggleSession,
         }}

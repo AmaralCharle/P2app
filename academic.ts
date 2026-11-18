@@ -65,6 +65,20 @@ export function getStudyPlan(grades: Record<string, number>) {
     }));
 }
 
+export function withoutStudentAcademicData<T extends { studentId?: number }>(
+  events: T[],
+  completedSessions: string[],
+  studentId: number
+) {
+  const sessionPrefix = `[${studentId},`;
+  return {
+    events: events.filter((event) => event.studentId !== studentId),
+    completedSessions: completedSessions.filter(
+      (session) => !session.startsWith(sessionPrefix)
+    ),
+  };
+}
+
 export function parseGrade(value: string): number | null {
   const normalized = value.trim().replace(',', '.');
   if (!/^\d+(\.\d+)?$/.test(normalized)) return null;

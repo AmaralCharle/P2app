@@ -4,6 +4,7 @@ import { usePersistedState } from './hooks/usePersistedState';
 import { storageKeys } from './services/storage';
 import { isStudentList } from './services/validators';
 import { PersistenceGate } from './components/PersistenceGate';
+import { useAcademic } from './AcademicContext';
 
 export type Student = {
   id: number;
@@ -15,7 +16,7 @@ export type Student = {
 type StudentsContextValue = {
   students: Student[];
   addStudent: (name: string) => void;
-  removerAluno: (id: number) => void;
+  removerAluno: (id: number) => Promise<boolean>;
   updateGrade: (studentId: number, subject: string, grade: number) => void;
 };
 
@@ -31,6 +32,7 @@ export function StudentsProvider({ children }: PropsWithChildren) {
   );
   const students = persisted.value;
   const setStudents = persisted.update;
+  const { removeStudentDependencies } = useAcademic();
 
   const addStudent = (name: string) => {
     const student: Student = {
@@ -48,8 +50,14 @@ export function StudentsProvider({ children }: PropsWithChildren) {
     setStudents((current) => [student, ...current]);
   };
 
-  const removerAluno = (id: number) => {
-    setStudents((current) => current.filter((student) => student.id !== id));
+  const removerAluno = async (id: number) => {
+    const [studentsSaved, academicDataSaved] = await Promise.all([
+      setStudents((current) =>
+        current.filter((student) => student.id !== id)
+      ),
+      removeStudentDependencies(id),
+    ]);
+    return studentsSaved && academicDataSaved;
   };
 
   const updateGrade = (studentId: number, subject: string, grade: number) => {

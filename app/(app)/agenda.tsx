@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useAcademic } from '../../AcademicContext';
+import { useStudents } from '../../StudentsContext';
 import { formatAcademicDate, parseAcademicDate } from '../../academic';
 import {
   AcademicScreen,
@@ -16,15 +17,22 @@ export default function Agenda() {
   const ui = useAcademicStyles();
   const router = useRouter();
   const { events, addEvent, toggleEvent, removeEvent } = useAcademic();
+  const { students } = useStudents();
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [date, setDate] = useState('');
+  const [studentId, setStudentId] = useState<number | null>(
+    students[0]?.id ?? null
+  );
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState('');
   const [filter, setFilter] = useState<'Todos' | 'Pendentes' | 'Concluídos'>(
     'Todos'
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const selectedStudentId = students.some((student) => student.id === studentId)
+    ? studentId
+    : (students[0]?.id ?? null);
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const visibleEvents = events
@@ -43,13 +51,18 @@ export default function Agenda() {
   function save() {
     const parsed = parseAcademicDate(date);
     setFeedback('');
-    if (!title.trim() || !subject.trim() || !parsed) {
+    if (!title.trim() || !subject.trim() || !parsed || !selectedStudentId) {
       setError(
-        'Preencha o título, a disciplina e uma data válida no formato DD/MM/AAAA.'
+        'Selecione um aluno e preencha o título, a disciplina e uma data válida no formato DD/MM/AAAA.'
       );
       return;
     }
-    addEvent({ title: title.trim(), subject: subject.trim(), date: parsed });
+    addEvent({
+      studentId: selectedStudentId,
+      title: title.trim(),
+      subject: subject.trim(),
+      date: parsed,
+    });
     setTitle('');
     setSubject('');
     setDate('');
@@ -83,6 +96,30 @@ export default function Agenda() {
         <View style={ui.column}>
           <Card>
             <Text style={ui.heading}>Novo compromisso</Text>
+            <Text style={ui.muted}>Aluno relacionado</Text>
+            <View style={ui.row}>
+              {students.map((student) => (
+                <Pressable
+                  key={student.id}
+                  accessibilityRole="button"
+                  accessibilityState={{
+                    selected: selectedStudentId === student.id,
+                  }}
+                  style={[
+                    ui.chip,
+                    selectedStudentId === student.id && ui.chipActive,
+                  ]}
+                  onPress={() => setStudentId(student.id)}
+                >
+                  <Text style={ui.text}>{student.name}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {!students.length && (
+              <Text style={ui.muted}>
+                Cadastre um aluno antes de adicionar um compromisso.
+              </Text>
+            )}
             <Text style={ui.muted}>Título</Text>
             <TextInput
               accessibilityLabel="Título do compromisso"
@@ -162,60 +199,72 @@ export default function Agenda() {
               <Text style={ui.text}>Nenhum compromisso neste filtro.</Text>
             </Card>
           )}
-          {visibleEvents.map((event) => (
-            <Card key={event.id}>
-              <View style={ui.spread}>
-                <Text style={ui.badge}>{formatAcademicDate(event.date)}</Text>
-                <Text style={event.done ? [ui.text, ui.success] : ui.muted}>
-                  {event.done ? 'Concluído' : 'Pendente'}
-                </Text>
-              </View>
-              {!event.done && event.date <= today && (
-                <Text style={event.date < today ? ui.error : ui.success}>
-                  {event.date < today ? 'Prazo vencido' : 'Prazo para hoje'}
-                </Text>
-              )}
-              <Text style={ui.heading}>{event.title}</Text>
-              <Text style={ui.text}>{event.subject}</Text>
-              <Action
-                label={
-                  event.done ? 'Reabrir compromisso' : 'Marcar como concluído'
-                }
-                icon={event.done ? 'rotate-ccw' : 'check'}
-                secondary
-                onPress={() => toggleEvent(event.id)}
-              />
-              {deletingId === event.id ? (
-                <View style={[ui.divider, { gap: 12 }]}>
-                  <Text style={ui.error}>
-                    Excluir este compromisso da agenda?
+          {visibleEvents.map((event) => {
+            const student = students.find(
+              (item) => item.id === event.studentId
+            );
+            return (
+              <Card key={event.id}>
+                <View style={ui.spread}>
+                  <Text style={ui.badge}>
+                    {formatAcademicDate(event.date)}
                   </Text>
+                  <Text style={event.done ? [ui.text, ui.success] : ui.muted}>
+                    {event.done ? 'Concluído' : 'Pendente'}
+                  </Text>
+                </View>
+                {student && (
+                  <Text style={ui.muted}>Aluno: {student.name}</Text>
+                )}
+                {!event.done && event.date <= today && (
+                  <Text style={event.date < today ? ui.error : ui.success}>
+                    {event.date < today ? 'Prazo vencido' : 'Prazo para hoje'}
+                  </Text>
+                )}
+                <Text style={ui.heading}>{event.title}</Text>
+                <Text style={ui.text}>{event.subject}</Text>
+                <Action
+                  label={
+                    event.done
+                      ? 'Reabrir compromisso'
+                      : 'Marcar como concluído'
+                  }
+                  icon={event.done ? 'rotate-ccw' : 'check'}
+                  secondary
+                  onPress={() => toggleEvent(event.id)}
+                />
+                {deletingId === event.id ? (
+                  <View style={[ui.divider, { gap: 12 }]}>
+                    <Text style={ui.error}>
+                      Excluir este compromisso da agenda?
+                    </Text>
+                    <Action
+                      label="Confirmar exclusão"
+                      icon="trash-2"
+                      secondary
+                      onPress={() => {
+                        removeEvent(event.id);
+                        setDeletingId(null);
+                      }}
+                    />
+                    <Action
+                      label="Cancelar"
+                      icon="x"
+                      secondary
+                      onPress={() => setDeletingId(null)}
+                    />
+                  </View>
+                ) : (
                   <Action
-                    label="Confirmar exclusão"
+                    label="Excluir compromisso"
                     icon="trash-2"
                     secondary
-                    onPress={() => {
-                      removeEvent(event.id);
-                      setDeletingId(null);
-                    }}
+                    onPress={() => setDeletingId(event.id)}
                   />
-                  <Action
-                    label="Cancelar"
-                    icon="x"
-                    secondary
-                    onPress={() => setDeletingId(null)}
-                  />
-                </View>
-              ) : (
-                <Action
-                  label="Excluir compromisso"
-                  icon="trash-2"
-                  secondary
-                  onPress={() => setDeletingId(event.id)}
-                />
-              )}
-            </Card>
-          ))}
+                )}
+              </Card>
+            );
+          })}
         </View>
       </View>
     </AcademicScreen>

@@ -46,6 +46,9 @@ export function isAcademicData(value: unknown): value is AcademicData {
         typeof item.id === 'string' &&
         typeof item.title === 'string' &&
         typeof item.subject === 'string' &&
+        (item.studentId === undefined ||
+          (Number.isSafeInteger(item.studentId) &&
+            Number(item.studentId) > 0)) &&
         typeof item.date === 'string' &&
         /^\d{4}-\d{2}-\d{2}$/.test(item.date) &&
         typeof item.done === 'boolean'

@@ -19,7 +19,7 @@ Abra pelo Expo Go compatível com o SDK do projeto ou use `npm run web` no naveg
 | --------------------- | -------------------- | ------------------------------------------------------------ |
 | Login                 | `/login`             | Entrada demonstrativa                                        |
 | Dashboard             | `/`                  | Indicadores da turma e atalhos                               |
-| Alunos                | `/alunos`            | Consulta dos alunos                                          |
+| Alunos                | `/alunos`            | Consulta, filtros e remoção confirmada de alunos             |
 | Adicionar aluno       | `/novo-aluno`        | Cadastro de estudante                                        |
 | Notas                 | `/notas`             | Seleção para lançamento                                      |
 | Notas do aluno        | `/aluno/[id]`        | Editar notas entre 0 e 10, com ponto ou vírgula              |
@@ -27,7 +27,7 @@ Abra pelo Expo Go compatível com o SDK do projeto ou use `npm run web` no naveg
 | Configurações         | `/config`            | Informações e saída da sessão                                |
 | Disciplinas           | `/disciplinas`       | Busca sem acentos e média por matéria                        |
 | Detalhe da disciplina | `/disciplina/[nome]` | Notas dos alunos e acesso à edição                           |
-| Agenda acadêmica      | `/agenda`            | Cadastro, filtros, conclusão e exclusão com confirmação      |
+| Agenda acadêmica      | `/agenda`            | Cadastro vinculado a aluno, filtros, conclusão e exclusão     |
 | Plano de estudos      | `/plano-estudos`     | Revisão por aluno, prioridades, tempo e progresso            |
 | Clima para sua rotina | `/clima`             | Clima real por cidade, previsão de 3 dias e atualização      |
 | Previsão por horário  | `/previsao/[data]`   | Temperatura e chance de chuva por horário do dia selecionado |
@@ -40,6 +40,8 @@ Os arquivos `_layout.tsx` são layouts de navegação e não entram na contagem.
 - A agenda valida datas, ordena por prazo e destaca compromissos vencidos ou para hoje.
 - O plano sugere 40 minutos para notas abaixo de 5, 30 para notas de 5 até abaixo de 7 e 20 para notas a partir de 7.
 - Revisões concluídas são separadas por aluno e disciplina.
+- A exclusão de um aluno também remove seus compromissos vinculados e revisões concluídas; notas ficam armazenadas no próprio registro do aluno.
+- Compromissos antigos, criados antes do vínculo com aluno, são preservados como registros sem vínculo.
 - Alunos, notas, agenda e revisões são restaurados do armazenamento local ao abrir o app. O tema e a última cidade também ficam salvos.
 
 ## Situação das aulas 9 e 10

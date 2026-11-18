@@ -46,8 +46,8 @@ export default function AppLayout() {
   }
 
   return (
-    <StudentsProvider>
-      <AcademicProvider>
+    <AcademicProvider>
+      <StudentsProvider>
         <SafeAreaView style={styles.screen}>
           <View style={styles.sidebarContainer}>
             <View style={styles.brand}>
@@ -140,8 +140,8 @@ export default function AppLayout() {
             </View>
           </View>
         </SafeAreaView>
-      </AcademicProvider>
-    </StudentsProvider>
+      </StudentsProvider>
+    </AcademicProvider>
   );
 }
 

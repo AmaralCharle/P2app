@@ -8,6 +8,7 @@ import {
   parseAcademicDate,
   formatAcademicDate,
   parseGrade,
+  withoutStudentAcademicData,
 } from '../academic.ts';
 
 const students = [
@@ -89,4 +90,25 @@ test('plano prioriza menores notas e aplica limites de tempo e prioridade', () =
     ['Prioridade alta', 'Reforço', 'Manutenção']
   );
   assert.deepEqual(getStudyPlan({}), []);
+});
+
+test('remove somente os compromissos e revisões do aluno excluído', () => {
+  const events = [
+    { id: 'a', studentId: 1 },
+    { id: 'b', studentId: 10 },
+    { id: 'c' },
+  ];
+  const completedSessions = [
+    '[1,"Matemática"]',
+    '[10,"Física"]',
+    'legacy-session',
+  ];
+
+  assert.deepEqual(
+    withoutStudentAcademicData(events, completedSessions, 1),
+    {
+      events: [events[1], events[2]],
+      completedSessions: ['[10,"Física"]', 'legacy-session'],
+    }
+  );
 });
