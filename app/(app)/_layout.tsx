@@ -113,14 +113,16 @@ const createStyles = (colors: ThemeColors) =>
       backgroundColor: '#0A0F1E',
       borderRightWidth: 1,
       borderColor: 'rgba(255,255,255,0.05)',
-      padding: 24,
+      paddingTop: 40,
+      paddingHorizontal: 20,
+      paddingBottom: 20,
     },
     navigation: {
       flex: 1,
-      marginTop: 24,
     },
     brand: {
       flexShrink: 0,
+      marginBottom: 32,
     },
     eyebrow: {
       color: colors.info,
@@ -132,9 +134,10 @@ const createStyles = (colors: ThemeColors) =>
     },
     title: {
       color: colors.text,
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: '800',
       marginBottom: 4,
+      flexShrink: 1,
     },
     subtitle: {
       color: colors.textSoft,
