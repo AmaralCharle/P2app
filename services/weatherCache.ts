@@ -23,7 +23,10 @@ export function loadWeather(
   return loadCachedResource({
     ...options,
     storage,
-    key: storageKeys.weatherPrefix + encodeURIComponent(normalized),
+    key:
+      storageKeys.weatherPrefix +
+      'open-meteo:' +
+      encodeURIComponent(normalized),
     validate: isWeatherForecast,
     fetch: () => fetchWeather(city, options.signal),
     ttlMs: WEATHER_TTL_MS,

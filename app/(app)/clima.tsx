@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { hasWeatherApiKey } from '../../services/weather';
 import { useWeather } from '../../hooks/useWeather';
 import { Action, Card, useAcademicStyles } from '../../components/AcademicUI';
 import {
@@ -170,7 +169,6 @@ export default function Clima() {
   );
   const [error, setError] = useState('');
   const { width } = useWindowDimensions();
-  const configured = hasWeatherApiKey();
   function consult() {
     const city = draft.trim();
     if (city.length < 2 || city.length > 100) {
@@ -219,7 +217,7 @@ export default function Clima() {
       style={ui.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {configured && search ? (
+      {search ? (
         <ForecastResults
           key={`${search.city}:${search.revision}`}
           city={search.city}
@@ -234,20 +232,11 @@ export default function Clima() {
         >
           {header}
           <Card>
-            <Feather
-              name={configured ? 'cloud' : 'key'}
-              size={36}
-              color={colors.info}
-            />
-            <Text style={ui.heading}>
-              {configured
-                ? 'Sua próxima parada começa aqui'
-                : 'Clima ainda não ativado'}
-            </Text>
+            <Feather name="cloud" size={36} color={colors.info} />
+            <Text style={ui.heading}>Sua próxima parada começa aqui</Text>
             <Text style={ui.text}>
-              {configured
-                ? 'Informe a cidade para ver temperatura, chance de chuva e previsão dos próximos dias.'
-                : 'O serviço de clima precisa ser ativado pela equipe do app antes da primeira consulta.'}
+              Informe a cidade para ver temperatura, chance de chuva e previsão
+              dos próximos dias.
             </Text>
           </Card>
           <WeatherAttribution />

@@ -143,10 +143,16 @@ export function WeatherAttribution() {
   return (
     <View style={{ gap: 6, paddingVertical: 12 }}>
       <Link
-        href="https://www.weatherapi.com/"
+        href="https://open-meteo.com/"
         style={[ui.muted, { color: colors.info }]}
       >
-        Dados meteorológicos: WeatherAPI.com ↗
+        Dados meteorológicos: Open-Meteo ↗
+      </Link>
+      <Link
+        href="https://www.geonames.org/"
+        style={[ui.muted, { color: colors.info }]}
+      >
+        Localidades: GeoNames ↗
       </Link>
       <Text style={ui.muted}>
         Previsão de tempo para a cidade consultada. Sem acesso ao GPS.

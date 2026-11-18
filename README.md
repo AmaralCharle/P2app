@@ -46,7 +46,7 @@ Os arquivos `_layout.tsx` são layouts de navegação e não entram na contagem.
 
 O mínimo de telas e as integrações das aulas 9 e 10 estão implementados:
 
-- **Aula 9 — API implementada:** consulta meteorológica real na WeatherAPI, autenticada por chave externa. A busca por cidade retorna temperatura, sensação térmica, umidade, vento e previsão de até 3 dias. A `FlatList` liga cada data ao detalhe por horário. Há atualização por botão e pull-to-refresh, carregamento, erro com nova tentativa e estado vazio. O serviço usa HTTPS, valida resposta e status HTTP, cancela chamadas ao sair da tela e limita a espera a 12 segundos. Trata cidade inexistente, chave inválida, limite de consultas e indisponibilidade. Fonte: <https://www.weatherapi.com/docs/>.
+- **Aula 9 — API implementada:** consulta meteorológica real na API pública Open-Meteo, sem cadastro ou chave para uso acadêmico. Primeiro o app busca as coordenadas da cidade; depois consulta o clima e a previsão. A tela apresenta temperatura, sensação térmica, umidade, vento e previsão de 3 dias. A `FlatList` liga cada data ao detalhe por horário. Há atualização por botão e pull-to-refresh, carregamento, erro com nova tentativa e estado vazio. O serviço usa HTTPS, valida as respostas, cancela as chamadas ao sair da tela e limita a consulta completa a 12 segundos. Fontes: <https://open-meteo.com/en/docs> e <https://open-meteo.com/en/docs/geocoding-api>.
 - **Aula 10 — persistência implementada:** wrapper tipado de AsyncStorage, `usePersistedState`, tema claro/escuro em Configurações, sessão restaurada antes da guarda de rota, splash durante a inicialização, alunos/notas/agenda/revisões persistidos e clima com cache local. Há validade de 5 minutos, apresentação imediata de cache antigo enquanto atualiza, aviso de dados salvos/offline e atualização ao reconectar. Uma sessão demonstrativa persistente não equivale a autenticação real.
 
 ## Verificações
@@ -57,20 +57,19 @@ npm run typecheck
 npx expo export --platform web
 ```
 
-Os 35 testes cobrem médias, notas e datas, busca, prioridades, WeatherAPI, leitura corrompida, validação de dados locais, hidratação, reabertura, atualizações concorrentes, falha de gravação e recuperação, TTL, atualização forçada, cache offline, falha da API, cancelamento e limpeza de cache.
+Os 41 testes cobrem médias, notas e datas, busca, prioridades, Open-Meteo sem variável de chave, consulta por coordenadas, conversão de horários e condições meteorológicas, respostas inválidas, falhas HTTP, cancelamento, timeout, leitura corrompida, hidratação, reabertura, gravações concorrentes e cache offline.
 
 ## Armazenamento local — Aula 10
 
 As chaves são versionadas com o prefixo `academy:v1:`. O app lê o disco antes de decidir a rota ou exibir os dados acadêmicos; os valores iniciais não são gravados por cima dos valores existentes durante a hidratação. Alterações consecutivas são gravadas em ordem.
 
-| Informação                          | Onde fica    | Comportamento                                       |
-| ----------------------------------- | ------------ | --------------------------------------------------- |
-| Sessão demonstrativa Admin          | AsyncStorage | Restaura ao abrir; removida ao sair                 |
-| Tema e última cidade                | AsyncStorage | Preferências do aparelho; preservadas ao sair       |
-| Alunos e notas                      | AsyncStorage | Dados acadêmicos locais; preservados ao sair        |
-| Agenda e revisões concluídas        | AsyncStorage | Restauradas com os dados acadêmicos                 |
-| Clima por cidade e data da consulta | AsyncStorage | Cache válido por 5 minutos; removido ao sair        |
-| Chave WeatherAPI                    | `.env.local` | Não é gravada no AsyncStorage nem versionada no Git |
+| Informação                          | Onde fica    | Comportamento                                 |
+| ----------------------------------- | ------------ | --------------------------------------------- |
+| Sessão demonstrativa Admin          | AsyncStorage | Restaura ao abrir; removida ao sair           |
+| Tema e última cidade                | AsyncStorage | Preferências do aparelho; preservadas ao sair |
+| Alunos e notas                      | AsyncStorage | Dados acadêmicos locais; preservados ao sair  |
+| Agenda e revisões concluídas        | AsyncStorage | Restauradas com os dados acadêmicos           |
+| Clima por cidade e data da consulta | AsyncStorage | Cache válido por 5 minutos; removido ao sair  |
 
 Se a leitura falhar ou o formato salvo for incompatível, o app mostra nova tentativa sem substituir os dados pelo padrão. Se uma gravação falhar, mantém o trabalho na memória e informa que ainda não foi salvo; o botão de nova tentativa grava o valor atual.
 
@@ -89,16 +88,23 @@ O conjunto de dados e o cache são pequenos, por isso usam AsyncStorage. O login
 
 No Expo Go, a conexão com o servidor de desenvolvimento é necessária para carregar/recarregar o código. Faça o teste de modo avião com o app já carregado. A aparência da splash no Expo Go pode diferir de um aplicativo instalado, mas a leitura e a guarda de rota usam as mesmas flags de inicialização.
 
-## Configurar a WeatherAPI
+## Clima pronto para testar após clonar
 
-1. Crie uma conta gratuita em <https://www.weatherapi.com/signup> e copie a chave no painel da conta. A função usa apenas clima atual e previsão de 3 dias, incluídos no plano Free.
-2. Copie `.env.example` para `.env.local` na raiz do projeto.
-3. Preencha `EXPO_PUBLIC_WEATHER_API_KEY` com sua chave, sem aspas, sem compartilhar o arquivo.
-4. Reinicie o servidor Expo para carregar a variável e recarregue o aplicativo.
+O clima funciona sem configurar `.env`, criar conta ou obter chave. Basta ter internet, instalar as dependências e iniciar o Expo. A API pública do Open-Meteo permite esse uso acadêmico não comercial sem autenticação.
 
-`.env.local` está ignorado pelo Git; somente o exemplo vazio é versionado. Como as variáveis `EXPO_PUBLIC_` são incluídas no aplicativo, isso não torna a chave um segredo de servidor. Esta integração é para demonstração acadêmica; em uma publicação pública, use um backend para proteger a chave ou as restrições de aplicação oferecidas pelo provedor.
+Para quem já tinha o projeto:
 
-O clima vem da WeatherAPI. Sem conexão, o app mostra a consulta salva com um aviso; se não houver cache, informa que precisa de internet. As dicas de mochila usam os valores da previsão. A consulta usa a cidade digitada, sem permissão de GPS. Os horários e a data seguem a localidade consultada.
+```bash
+git pull origin main
+npm ci
+npm start -- --clear
+```
+
+No Expo Go, recarregue o projeto e abra Clima. Consulte, por exemplo, `Vassouras` ou `São Paulo, Brasil`. Separe a cidade e o estado ou país por vírgula quando precisar distinguir localidades com o mesmo nome.
+
+A antiga variável `EXPO_PUBLIC_WEATHER_API_KEY` não é mais utilizada. Quem tiver um `.env.local` antigo pode mantê-lo sem afetar o clima. Nenhuma credencial acompanha o GitHub.
+
+As condições e previsões vêm de modelos meteorológicos do Open-Meteo; as localidades vêm do GeoNames. Os códigos meteorológicos são apresentados em português. Sem conexão, o app mostra a consulta salva com um aviso; se não houver cache, informa que precisa de internet. O cache do novo provedor é separado do antigo, sem alterar alunos, notas, agenda, sessão ou preferências. As dicas de mochila usam os valores da previsão. A consulta usa a cidade digitada, sem permissão de GPS. Os horários e a data seguem a localidade consultada.
 
 ## Testar no celular com Expo Go
 
@@ -108,7 +114,7 @@ O clima vem da WeatherAPI. Sem conexão, o app mostra a consulta salva com um av
 4. Se o iPhone solicitar autenticação, entre com a mesma conta Expo no computador (`npx expo login`) e no Expo Go.
 5. Se a rede bloquear a conexão e o Expo Go mostrar uma falha ao abrir o projeto, use `npm run start:tunnel` e escaneie o novo QR code. O projeto inclui `@expo/ngrok` como dependência de desenvolvimento para esse modo. O computador e o celular precisam de internet, mas podem estar em redes diferentes. O endereço do túnel muda ao reiniciar; use sempre o QR code do servidor atual.
 
-A API externa usa HTTPS: a consulta do clima não precisa de servidor local nem de configurar o IP do computador, mas exige a chave WeatherAPI na variável local. O servidor Expo ainda precisa estar acessível ao celular para carregar o aplicativo.
+A API externa usa HTTPS: a consulta do clima não precisa de servidor local, chave nem configuração do IP do computador. O servidor Expo ainda precisa estar acessível ao celular para carregar o aplicativo.
 
 Confira no aparelho: login, menu horizontal, cadastro, notas com vírgula, agenda com teclado aberto, plano de estudos e clima. Consulte sua cidade, puxe a lista para atualizar e toque em uma data para abrir os horários. Teste reabertura, troca de tema e modo avião com o roteiro acima.
 
