@@ -1,6 +1,12 @@
 import type { ThemeColors } from '../../theme';
 import { useTheme } from '../../ThemeContext';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Redirect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../AuthContext';
@@ -12,45 +18,63 @@ export default function Login() {
   if (usuario && !saving) return <Redirect href="/" />;
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Academy Notes</Text>
-        <Text style={styles.subtitle}>
-          Entre para acessar o painel acadêmico.
-        </Text>
-
-        <Pressable
-          accessibilityRole="button"
-          style={styles.button}
-          disabled={saving}
-          onPress={() => {
-            void entrar();
-          }}
-        >
-          <Text style={styles.buttonText}>
-            {saving ? 'Salvando sessão...' : 'Entrar no Academy Notes'}
+    <ImageBackground
+      source={require('../../assets/biblioteca-bk.jpg')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay} />
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Academy Notes</Text>
+          <Text style={styles.subtitle}>
+            Entre para acessar o painel acadêmico.
           </Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+
+          <Pressable
+            accessibilityRole="button"
+            style={styles.button}
+            disabled={saving}
+            onPress={() => {
+              void entrar();
+            }}
+          >
+            <Text style={styles.buttonText}>
+              {saving ? 'Salvando sessão...' : 'Entrar no Academy Notes'}
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-    screen: {
+    backgroundImage: {
       flex: 1,
+      width: '100%',
+      height: '100%',
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
+    },
+    overlay: {
+      ...StyleSheet.absoluteFill,
+      backgroundColor: 'rgba(10, 15, 30, 0.82)',
+    },
+    screen: {
+      flex: 1,
+      width: '100%',
       padding: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     card: {
       width: '100%',
       maxWidth: 400,
-      backgroundColor: colors.backgroundCard,
+      backgroundColor: 'rgba(255, 255, 255, 0.04)',
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: 'rgba(255, 255, 255, 0.12)',
       borderRadius: 24,
       padding: 40,
       alignItems: 'center',
