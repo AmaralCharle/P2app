@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { radius, spacing } from '../../theme';
-import { initialStudents } from '../../dados.js';
 import { useStudents } from '../../StudentsContext';
 import { parseGrade } from '../../academic';
 
@@ -24,9 +23,13 @@ export default function Notas() {
   const styles = createStyles(colors);
   const colorScheme = useColorScheme();
   const { students, updateGrade } = useStudents();
-  const [selectedStudentId, setSelectedStudentId] = useState(
-    initialStudents[0].id
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
+    students[0]?.id ?? null
   );
+  const selectedStudent =
+    students.find((student) => student.id === selectedStudentId) ??
+    students[0] ??
+    null;
   const [subject, setSubject] = useState('Matemática');
   const [grade, setGrade] = useState('8.5');
   const [feedback, setFeedback] = useState('');
@@ -35,12 +38,16 @@ export default function Notas() {
   const addGrade = () => {
     const gradeValue = parseGrade(grade);
     setFeedback('');
+    if (!selectedStudent) {
+      setError('Cadastre um aluno antes de lançar notas.');
+      return;
+    }
     if (!subject.trim() || gradeValue === null) {
       setError('Informe uma disciplina e uma nota de 0 a 10 (ex.: 8,5).');
       return;
     }
 
-    updateGrade(selectedStudentId, subject.trim(), gradeValue);
+    updateGrade(selectedStudent.id, subject.trim(), gradeValue);
     setError('');
     setFeedback('Nota salva para o aluno selecionado.');
     setGrade('');
@@ -62,78 +69,85 @@ export default function Notas() {
           title="Notas"
           subtitle="Registre e atualize as avaliações do aluno selecionado"
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
+          {!students.length ? (
             <Text style={[styles.textoBase, styles.label]}>
-              Aluno selecionado
+              Cadastre um aluno antes de lançar notas.
             </Text>
-            <View style={styles.pillContainer}>
-              {students.map((student) => (
-                <Pressable
-                  key={student.id}
-                  style={[
-                    styles.pill,
-                    student.id === selectedStudentId && styles.pillSelected,
-                  ]}
-                  onPress={() => setSelectedStudentId(student.id)}
-                >
-                  <Text
-                    style={[
-                      styles.textoBase,
-                      styles.pillText,
-                      student.id === selectedStudentId &&
-                        styles.pillTextSelected,
-                    ]}
-                  >
-                    {student.name}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            <TextInput
-              accessibilityLabel="Disciplina"
-              value={subject}
-              onChangeText={setSubject}
-              placeholder="Disciplina"
-              placeholderTextColor={colors.placeholder}
-              style={styles.input}
-            />
-            <TextInput
-              accessibilityLabel="Nota"
-              value={grade}
-              onChangeText={setGrade}
-              placeholder="Nota"
-              keyboardType="decimal-pad"
-              placeholderTextColor={colors.placeholder}
-              style={styles.input}
-            />
-            {!!error && (
-              <Text
-                accessibilityRole="alert"
-                style={{ color: colors.danger, marginBottom: 12 }}
-              >
-                {error}
-              </Text>
-            )}
-            {!!feedback && (
-              <Text
-                accessibilityLiveRegion="polite"
-                style={{ color: colors.success, marginBottom: 12 }}
-              >
-                {feedback}
-              </Text>
-            )}
-            <Pressable
-              accessibilityRole="button"
-              style={styles.primaryButton}
-              onPress={addGrade}
+          ) : (
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-              <Text style={[styles.textoBase, styles.primaryButtonText]}>
-                Salvar nota
+              <Text style={[styles.textoBase, styles.label]}>
+                Aluno selecionado
               </Text>
-            </Pressable>
-          </KeyboardAvoidingView>
+              <View style={styles.pillContainer}>
+                {students.map((student) => (
+                  <Pressable
+                    key={student.id}
+                    style={[
+                      styles.pill,
+                      student.id === selectedStudent.id &&
+                        styles.pillSelected,
+                    ]}
+                    onPress={() => setSelectedStudentId(student.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.textoBase,
+                        styles.pillText,
+                        student.id === selectedStudent.id &&
+                          styles.pillTextSelected,
+                      ]}
+                    >
+                      {student.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <TextInput
+                accessibilityLabel="Disciplina"
+                value={subject}
+                onChangeText={setSubject}
+                placeholder="Disciplina"
+                placeholderTextColor={colors.placeholder}
+                style={styles.input}
+              />
+              <TextInput
+                accessibilityLabel="Nota"
+                value={grade}
+                onChangeText={setGrade}
+                placeholder="Nota"
+                keyboardType="decimal-pad"
+                placeholderTextColor={colors.placeholder}
+                style={styles.input}
+              />
+              {!!error && (
+                <Text
+                  accessibilityRole="alert"
+                  style={{ color: colors.danger, marginBottom: 12 }}
+                >
+                  {error}
+                </Text>
+              )}
+              {!!feedback && (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={{ color: colors.success, marginBottom: 12 }}
+                >
+                  {feedback}
+                </Text>
+              )}
+              <Pressable
+                accessibilityRole="button"
+                style={styles.primaryButton}
+                onPress={addGrade}
+              >
+                <Text style={[styles.textoBase, styles.primaryButtonText]}>
+                  Salvar nota
+                </Text>
+              </Pressable>
+            </KeyboardAvoidingView>
+          )}
         </ScreenShell>
       </ScrollView>
     </SafeAreaView>

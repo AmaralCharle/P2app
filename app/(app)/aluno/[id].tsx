@@ -14,7 +14,6 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { radius, spacing } from '../../../theme';
-import { initialStudents } from '../../../dados.js';
 import { useStudents } from '../../../StudentsContext';
 import { parseGrade } from '../../../academic';
 
@@ -25,9 +24,7 @@ export default function LancarNotas() {
   const studentId = Number(id);
   const router = useRouter();
   const { students, updateGrade } = useStudents();
-  const student =
-    students.find((item) => item.id === studentId) ??
-    initialStudents.find((item) => item.id === studentId);
+  const student = students.find((item) => item.id === studentId);
   const [subject, setSubject] = useState('Matemática');
   const [grade, setGrade] = useState('8.5');
   const [error, setError] = useState('');
